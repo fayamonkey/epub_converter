@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+        }
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            background-color: #ecf0f1;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #2980b9;
+            background-color: #d5dbdb;
+        }
+        .upload-area.dragover {
+            border-color: #27ae60;
+            background-color: #d5f4e6;
+        }
+        .file-input {
+            display: none;
+        }
+        .upload-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .upload-btn:hover {
+            background-color: #2980b9;
+        }
+        .format-selection {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .format-selection label {
+            margin: 0 15px;
+            font-weight: 500;
+        }
+        .format-selection input[type="radio"] {
+            margin-right: 5px;
+        }
+        .convert-btn {
+            background-color: #27ae60;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        .convert-btn:hover {
+            background-color: #229954;
+        }
+        .convert-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .selected-file {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f6f3;
+            border-radius: 5px;
+            border-left: 4px solid #27ae60;
+        }
+        .error {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #e74c3c;
+        }
+        .info {
+            color: #2980b9;
+            background-color: #ebf3fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .cleanup-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .cleanup-link a {
+            color: #e74c3c;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .cleanup-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 EPUB Converter</h1>
+        <p class="subtitle">Convert your EPUB files to text or markdown format</p>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="error">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="info">
+            <strong>Supported:</strong> EPUB files up to 50MB<br>
+            <strong>Output formats:</strong> Plain text (.txt) or Markdown (.md)<br>
+            <strong>Note:</strong> This tool extracts text content without editing it
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-area" id="uploadArea">
+                <p>📁 Drag and drop your EPUB file here, or click to browse</p>
+                <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Choose EPUB File
+                </button>
+                <input type="file" id="fileInput" name="file" accept=".epub" class="file-input" required>
+            </div>
+
+            <div id="selectedFile" class="selected-file" style="display: none;">
+                <strong>Selected file:</strong> <span id="fileName"></span>
+            </div>
+
+            <div class="format-selection">
+                <strong>Output format:</strong><br><br>
+                <label>
+                    <input type="radio" name="format" value="txt" checked>
+                    Plain Text (.txt)
+                </label>
+                <label>
+                    <input type="radio" name="format" value="md">
+                    Markdown (.md)
+                </label>
+            </div>
+
+            <button type="submit" class="convert-btn" id="convertBtn" disabled>
+                🔄 Convert EPUB
+            </button>
+        </form>
+
+        <div class="cleanup-link">
+            <a href="/cleanup">🗑️ Clean up old files</a>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const selectedFile = document.getElementById('selectedFile');
+        const fileName = document.getElementById('fileName');
+        const convertBtn = document.getElementById('convertBtn');
+
+        // Handle file selection
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                fileName.textContent = file.name;
+                selectedFile.style.display = 'block';
+                convertBtn.disabled = false;
+            }
+        });
+
+        // Handle drag and drop
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.toLowerCase().endsWith('.epub')) {
+                fileInput.files = files;
+                fileName.textContent = files[0].name;
+                selectedFile.style.display = 'block';
+                convertBtn.disabled = false;
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', function() {
+            convertBtn.textContent = '⏳ Converting...';
+            convertBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>

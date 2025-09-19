@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion Complete - EPUB Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .file-info {
+            background-color: #e8f6f3;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+            border-left: 4px solid #27ae60;
+        }
+        .download-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #2980b9;
+        }
+        .back-btn {
+            background-color: #95a5a6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .back-btn:hover {
+            background-color: #7f8c8d;
+        }
+        .info {
+            color: #2980b9;
+            background-color: #ebf3fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .actions {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✅</div>
+        <h1>Conversion Successful!</h1>
+        <p>Your EPUB file has been successfully converted.</p>
+
+        <div class="file-info">
+            <h3>📄 Converted File</h3>
+            <p><strong>Filename:</strong> {{ filename }}</p>
+            <p><strong>Format:</strong> {{ format }} File</p>
+        </div>
+
+        <div class="info">
+            <strong>Ready to download!</strong><br>
+            Your converted file is ready. Click the download button below to save it to your computer.
+        </div>
+
+        <div class="actions">
+            <a href="{{ url_for('download_file', filename=filename) }}" class="download-btn">
+                💾 Download {{ format }} File
+            </a>
+            <br>
+            <a href="{{ url_for('upload_file') }}" class="back-btn">
+                ← Convert Another File
+            </a>
+        </div>
+
+        <div style="margin-top: 40px; font-size: 14px; color: #7f8c8d;">
+            <p>💡 <strong>Tip:</strong> The converted file preserves the original structure and formatting as much as possible.</p>
+            {% if format == 'MD' %}
+            <p>📝 Markdown files can be opened with any text editor or markdown viewer.</p>
+            {% else %}
+            <p>📄 Text files can be opened with any text editor like Notepad, VS Code, or Word.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Auto-download after a short delay (optional)
+        // setTimeout(function() {
+        //     window.location.href = "{{ url_for('download_file', filename=filename) }}";
+        // }, 2000);
+    </script>
+</body>
+</html>
